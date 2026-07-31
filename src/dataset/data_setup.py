@@ -61,8 +61,11 @@ class MyCustomDataset(Dataset):
 
         # 4. Склеиваем корневой путь и относительные пути из конфига
         # (Path подменяет \ на / автоматически в зависимости от OS)
-        self.img_dir = (root / Path(rel_img_path)).resolve()
-        self.labels_dir = (root / Path(rel_lbl_path)).resolve()
+        clean_img_path = rel_img_path.replace("\\", "/")
+        clean_lbl_path = rel_lbl_path.replace("\\", "/")
+
+        self.img_dir = (root / Path(clean_img_path)).resolve()
+        self.labels_dir = (root / Path(clean_lbl_path)).resolve()
 
         if not self.img_dir.exists():
             raise FileNotFoundError(f"Директория с изображениями не найдена по пути: {self.img_dir}")

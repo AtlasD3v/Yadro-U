@@ -28,7 +28,7 @@ def main():
     is_warmup = True
     need_scaler = True
     max_grad_norm = None
-    dataset_root = None #пока что None, когда загружу датасет, тут укажу путь на него
+    dataset_root = "D:\\practicum\\data\\raw\\final_dataset" #пока что None, когда загружу датасет, тут укажу путь на него
 
     learned_model = training_engine.fit(
         model= model, 
