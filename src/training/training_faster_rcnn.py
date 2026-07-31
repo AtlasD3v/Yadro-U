@@ -19,11 +19,10 @@ def main():
 
     model, optim_param_groups = init_model(base_lr, num_classes)
     optimizer = gen_optim.build_optimizer(optim_param_groups, base_lr)
-    print(f"______________________ {optim_param_groups}____________________")
 
     model_name = 'faster-rcnn'
     num_epochs = 100
-    batch_size = 32
+    batch_size = 64
     checkpoint_path = DEFAULT_CHECKPOINTS_PATH
     need_scheduler = True
     is_warmup = True
@@ -87,4 +86,5 @@ def init_weights_kaiming(model: torch.nn.Module):
 
 
 
-main()
+if __name__ == '__main__':
+    main()

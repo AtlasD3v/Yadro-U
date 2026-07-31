@@ -11,7 +11,3 @@ def build_model(num_classes, trainable_backbone_layers = None):
     )
 
     return model
-
-
-def optim_groups():
-    pass

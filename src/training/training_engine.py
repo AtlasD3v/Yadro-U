@@ -1,17 +1,11 @@
 import torch
 from torch.utils.data import DataLoader
-from torch.utils.data import Dataset
 
 from src.dataset.data_setup import MyCustomDataset
 from src.dataset.collate import collate_fn_torchvision
-from src.training.optim import gen_optim
 from src.training.scheduler import gen_sched
 from src.training.scaler import gen_scaler
 from src.eval.evaluate import validate_one_epoch
-
-import src.models.custom_arch as custom_arch
-import src.models.faster_rcnn as faster_rcnn
-import src.models.retinanet as retinanet
 
 
 import time
@@ -19,18 +13,19 @@ from typing import List
 import os
 
 
-def build_loader(batch_size = 32, num_workers = 4, dataset_root = None):
+def build_loader(batch_size = 32, num_workers = 2, dataset_root = None):
     custom_dataset_train = MyCustomDataset(model_type="torchvision", split="train", dataset_root= dataset_root)
     custom_dataset_val = MyCustomDataset(model_type="torchvision", split="val", dataset_root= dataset_root)
 
     loader_train = DataLoader(
         dataset = custom_dataset_train,
-        batch_size = batch_size,
+        batch_size = batch_size, # Если используешь 2 x GPU, батч можно увеличить (например, до 32 или 64)
         shuffle = True,
         num_workers = num_workers,
         drop_last= True,
         collate_fn = collate_fn_torchvision,
-        pin_memory= True
+        pin_memory= True, # <--- Ускоряет передачу из оперативной памяти (RAM) в видеопамять (VRAM)
+        persistent_workers=True # <--- Не пересоздает воркеры каждую эпоху
     )
 
     loader_val = DataLoader(
@@ -52,7 +47,7 @@ def train_one_step(model: torch.nn.Module, optimizer: torch.optim.Optimizer, img
 
     optimizer.zero_grad(set_to_none= True) # обнуляем градиенты с прошлого шага
 
-    with torch.autocast(device = device.type, enabled= scaler is not None): #тут мы выполняем Часть операций forward - в float16 (если scaler is not None)
+    with torch.autocast(device_type = device.type, enabled= scaler is not None): #тут мы выполняем Часть операций forward - в float16 (если scaler is not None)
         loss_dict = model(imgs, targets) #делаем предсказания, получаем потери по батчу
         losses = sum(loss for loss in loss_dict.values()) #суммируем значения потерь по батчу
 
@@ -146,7 +141,7 @@ def fit(model:torch.nn.Module, optimizer: torch.optim.Optimizer, model_name, num
 
     model.to(device)
 
-    t_loader, val_loader = build_loader(batch_size=batch_size, num_workers=6, dataset_root=dataset_root)
+    t_loader, val_loader = build_loader(batch_size=batch_size, num_workers=1, dataset_root=dataset_root)
 
     scheduler = None
     scheduler_type = None
@@ -168,6 +163,7 @@ def fit(model:torch.nn.Module, optimizer: torch.optim.Optimizer, model_name, num
     best_map = float("-inf")
     best_loss = float("inf")
 
+    print("-----------------ПЕРЕХОДИМ К ЭПОХАМ ОБУЧЕНИЯ-----------------------")
     for epoch in range(num_epochs):
         epoch_avg_loss = train_one_epoch(model=model, data_loader=t_loader, optimizer=optimizer, device=device, num_epoch=epoch, scaler = scaler, scheduler= scheduler, scheduler_type=scheduler_type, max_grad_norm=max_grad_norm)
 

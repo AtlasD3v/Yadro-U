@@ -10,7 +10,7 @@ import configparser
 from pathlib import Path
 from typing import Optional
 
-from src.dataset.augmentation import build_transforms as b_t
+from src.dataset.augmentation import buld_transform_lite as b_t
 
 # Динамически находим корень проекта:
 # __file__ -> src/dataset/data_setup.py

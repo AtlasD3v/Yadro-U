@@ -14,7 +14,7 @@ def build_transformations(width, height):
                 min_height= height,
                 min_width= width,
                 border_mode= cv2.BORDER_CONSTANT,
-                value=(114, 114, 114),
+                fill=(114, 114, 114),
             ),
             #геометрические преобразования
             A.HorizontalFlip(p = 0.5),
