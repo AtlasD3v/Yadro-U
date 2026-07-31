@@ -1,0 +1,19 @@
+# 1. Не загружаем виртуальное окружение (оно весит гигабайты и не нужно на Linux)
+venv/
+.venv/
+
+# 2. Не загружаем тяжелые веса моделей и сам датасет
+checkpoints/*
+!checkpoints/.gitkeep
+
+data/*
+!data/.gitkeep
+
+final_dataset/*
+!final_dataset/.gitkeep
+
+# 3. Кэши Python и системный мусор
+__pycache__/
+*.pyc
+.vscode/
+.idea/
