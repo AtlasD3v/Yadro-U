@@ -49,7 +49,7 @@ def get_parameters_from_layers(model: torch.nn.Module, layers_dict: dict[str, li
         param_group.append({
             'params': remaining_params,
             'lr': base_lr, #здесь логика обучения такова, что neck и head Обучаются с base_lr
-            weight_decay': 1e-2
+            'weight_decay': 1e-2
         })
 
     return param_group
