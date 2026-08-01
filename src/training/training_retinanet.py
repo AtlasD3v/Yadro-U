@@ -22,7 +22,7 @@ def main():
 
     model_name = 'retinanet'
     num_epochs = 100
-    batch_size = 64
+    batch_size = 16
     checkpoint_path = DEFAULT_CHECKPOINTS_PATH
     need_scheduler = True
     is_warmup = True

@@ -14,7 +14,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 DEFAULT_CHECKPOINTS_PATH = os.path.join(BASE_DIR, "checkpoints")
 
 def main():
-    base_lr = 0.1e-3 #гиперпараметр скорости обучения конкретной модели
+    base_lr = 1e-4 #гиперпараметр скорости обучения конкретной модели
     num_classes = 7
 
     model, optim_param_groups = init_model(base_lr, num_classes)
@@ -22,7 +22,7 @@ def main():
 
     model_name = 'faster-rcnn'
     num_epochs = 100
-    batch_size = 64
+    batch_size = 32
     checkpoint_path = DEFAULT_CHECKPOINTS_PATH
     need_scheduler = True
     is_warmup = True
@@ -35,8 +35,7 @@ def main():
         optimizer= optimizer, 
         model_name= model_name, 
         num_epochs= num_epochs, 
-        batch_size= batch_size, 
-        lr = base_lr, 
+        batch_size= batch_size,
         checkpoint_path= checkpoint_path,
         need_scheduler= need_scheduler,
         is_warmup=is_warmup,

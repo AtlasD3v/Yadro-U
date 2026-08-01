@@ -33,7 +33,8 @@ def get_parameters_from_layers(model: torch.nn.Module, layers_dict: dict[str, li
         if group_params:
             param_group.append({
                 'params': group_params, #сохраняем найденные по совпадению имён параметры
-                'lr': base_lr * scale_factors.get(map_size, 1.0) #по размерности карт признаков (map_size, 1.0) находим scale_factors для текущих параметров и умножаем на base_lr
+                'lr': base_lr * scale_factors.get(map_size, 1.0), #по размерности карт признаков (map_size, 1.0) находим scale_factors для текущих параметров и умножаем на base_lr
+                'weight_decay': 1e-3
             })
 
 
@@ -47,7 +48,8 @@ def get_parameters_from_layers(model: torch.nn.Module, layers_dict: dict[str, li
     if remaining_params:
         param_group.append({
             'params': remaining_params,
-            'lr': base_lr #здесь логика обучения такова, что neck и head Обучаются с base_lr
+            'lr': base_lr, #здесь логика обучения такова, что neck и head Обучаются с base_lr
+            weight_decay': 1e-2
         })
 
     return param_group

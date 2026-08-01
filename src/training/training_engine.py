@@ -132,7 +132,7 @@ def safe_checkpoint(model, optim, epoch, checkpoint_dir, model_name, is_best):
 
 
 
-def fit(model:torch.nn.Module, optimizer: torch.optim.Optimizer, model_name, num_epochs, batch_size, lr = 0.0001, checkpoint_path = "D:\\Yadro-U\\checkpoints", device = None, need_scheduler = False, is_warmup = False, need_scaler = False, max_grad_norm = None, dataset_root = None):
+def fit(model:torch.nn.Module, optimizer: torch.optim.Optimizer, model_name, num_epochs, batch_size, checkpoint_path = "D:\\Yadro-U\\checkpoints", device = None, need_scheduler = False, is_warmup = False, need_scaler = False, max_grad_norm = None, dataset_root = None):
 
     if device is None:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -153,7 +153,7 @@ def fit(model:torch.nn.Module, optimizer: torch.optim.Optimizer, model_name, num
             scheduler_type = "per-epoch"
 
         total_steps = len(t_loader) * num_epochs
-        pct_start = 0.05 # 5% от всех шагов
+        pct_start = 0.01 # 1 от всех шагов
 
         scheduler = gen_sched.build_lr_scheduler(optimizer, total_steps, is_warmup=is_warmup, pct_start=pct_start) #планировщик изменения весов
 
