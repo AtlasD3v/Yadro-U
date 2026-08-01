@@ -7,11 +7,11 @@ def build_lr_scheduler(optimizer: torch.optim.Optimizer, total_steps, is_warmup 
      # тренировочный планировщик (линейный), который с начала обучения начинает постепенно приводить lr 
      # к тем, что были заданы в качестве гиперпараметров. Это делается, чтобы избежать взрывов градиентов в начале из-за высокого lr
     scheduler = None
-
+    max_lrs = [group['lr'] for group in optimizer.param_groups] # берём УЖЕ настроенные per-group lr из оптимизатора
     if is_warmup:
         scheduler = torch.optim.lr_scheduler.OneCycleLR(
             optimizer,
-            max_lr=max_lr, 
+            max_lr=max_lrs, 
             total_steps=total_steps,
             pct_start=pct_start,       # эквивалент твоего warmup_steps
             anneal_strategy='cos',     # косинусное затухание
