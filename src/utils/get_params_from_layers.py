@@ -31,11 +31,27 @@ def get_parameters_from_layers(model: torch.nn.Module, layers_dict: dict[str, li
                     assigned_param_names.add(param_name)#сохраняем название уже добавленного в группу параметров параметра
 
         if group_params:
-            param_group.append({
-                'params': group_params, #сохраняем найденные по совпадению имён параметры
-                'lr': base_lr * scale_factors.get(map_size, 1.0), #по размерности карт признаков (map_size, 1.0) находим scale_factors для текущих параметров и умножаем на base_lr
-                'weight_decay': 1e-3
-            })
+            #разделяем параметры группы на "decay" (ndim>1, обычно веса свёрток/Linear) и
+            #"no_decay" (ndim<=1, всегда bias и gamma/beta у BatchNorm/GroupNorm) —
+            #к no_decay параметрам weight_decay применять не нужно, иначе мы "стягиваем к нулю"
+            #сам механизм нормализации (gamma) и bias, для которых регуляризация обычно вредна
+            decay_params = [p for p in group_params if p.ndim > 1]
+            no_decay_params = [p for p in group_params if p.ndim <= 1]
+
+            group_lr = base_lr * scale_factors.get(map_size, 1.0) #по размерности карт признаков (map_size, 1.0) находим scale_factors для текущих параметров и умножаем на base_lr
+
+            if decay_params:
+                param_group.append({
+                    'params': decay_params, #сохраняем найденные по совпадению имён параметры (только весовые, ndim>1)
+                    'lr': group_lr,
+                    'weight_decay': 1e-3
+                })
+            if no_decay_params:
+                param_group.append({
+                    'params': no_decay_params, #bias и normalization-параметры этой же группы, БЕЗ weight_decay
+                    'lr': group_lr,
+                    'weight_decay': 0.0
+                })
 
 
     #заново перебираем все параметры модели, проверяя по имени, добавлены ли они уже в группу параметров или нет,
@@ -46,10 +62,21 @@ def get_parameters_from_layers(model: torch.nn.Module, layers_dict: dict[str, li
     ]
 
     if remaining_params:
-        param_group.append({
-            'params': remaining_params,
-            'lr': base_lr, #здесь логика обучения такова, что neck и head Обучаются с base_lr
-            'weight_decay': 1e-2
-        })
+        #та же логика decay/no_decay применяется и к параметрам neck+head, по той же причине
+        remaining_decay = [p for p in remaining_params if p.ndim > 1]
+        remaining_no_decay = [p for p in remaining_params if p.ndim <= 1]
+
+        if remaining_decay:
+            param_group.append({
+                'params': remaining_decay,
+                'lr': base_lr, #здесь логика обучения такова, что neck и head Обучаются с base_lr
+                'weight_decay': 1e-2
+            })
+        if remaining_no_decay:
+            param_group.append({
+                'params': remaining_no_decay,
+                'lr': base_lr,
+                'weight_decay': 0.0
+            })
 
     return param_group
